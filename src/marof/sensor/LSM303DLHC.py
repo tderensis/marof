@@ -109,7 +109,7 @@ class LSM303DLHC(object):
         self.magRange = self.MAG_RANGE_1_3
         self._lsbPerGauss = 1100.0
         self.magnetometer = Adafruit_I2C(magAddr, debug)
-        self.setMagnetometerGain(self.magGain)
+        self.setMagnetometerRange(self.magRange)
         self.enableMagnetometer(self.magEnabled)
         
         # init accelerometer
@@ -138,6 +138,7 @@ class LSM303DLHC(object):
         else:
             self.tempBit = 0x00
         self.magnetometer.write8(self._MAG_CRA_REG_M, self.tempBit | self.magDataRate)
+ 
         self.tempEnabled = enable
     
     def setMagnetometerRate(self, hz):
@@ -153,19 +154,19 @@ class LSM303DLHC(object):
         
         :param magRange: The range should be one of the MAG_RANGE_* variables in this class
         """
-        if magRange == self.MAG_GAIN_1_3:
+        if magRange == self.MAG_RANGE_1_3:
             self._lsbPerGauss = 1100.0
-        elif magRange == self.MAG_GAIN_1_9:
+        elif magRange == self.MAG_RANGE_1_9:
             self._lsbPerGauss = 855.0
-        elif magRange == self.MAG_GAIN_2_5:
+        elif magRange == self.MAG_RANGE_2_5:
             self._lsbPerGauss = 670.0
-        elif magRange == self.MAG_GAIN_4_0:
+        elif magRange == self.MAG_RANGE_4_0:
             self._lsbPerGauss = 450.0
-        elif magRange == self.MAG_GAIN_4_7:
+        elif magRange == self.MAG_RANGE_4_7:
             self._lsbPerGauss = 400.0
-        elif magRange == self.MAG_GAIN_5_6:
+        elif magRange == self.MAG_RANGE_5_6:
             self._lsbPerGauss = 330.0
-        elif magRange == self.MAG_GAIN_8_1:
+        elif magRange == self.MAG_RANGE_8_1:
             self._lsbPerGauss = 230.0     
         else:
             raise Exception("Invalid magnetic range is set")
@@ -193,9 +194,15 @@ class LSM303DLHC(object):
         data = self.magnetometer.readList(self._MAG_OUT_X_H_M, 6)
 
         # Convert to 2s complement and convert to Gauss
-        x = struct.unpack('h', struct.pack('BB', data[0], data[1]))[0]/self._lsbPerGauss
-        z = struct.unpack('h', struct.pack("BB", data[2], data[3]))[0]/self._lsbPerGauss
-        y = struct.unpack('h', struct.pack('BB', data[4], data[5]))[0]/self._lsbPerGauss
+        x = ((data[0] & 0x0F) << 8) + data[1]
+        x = self.twos_comp(x, 12)/self._lsbPerGauss
+        y = ((data[2] & 0x0F) << 8) + data[3]
+        y = self.twos_comp(y, 12)/self._lsbPerGauss
+        z = ((data[4] & 0x0F) << 8) + data[5]
+        z = self.twos_comp(z, 12)/self._lsbPerGauss
+        #x = struct.unpack('h', struct.pack('BB', data[0], data[1]))[0]/self._lsbPerGauss
+        #z = struct.unpack('h', struct.pack("BB", data[2], data[3]))[0]/self._lsbPerGauss
+        #y = struct.unpack('h', struct.pack('BB', data[4], data[5]))[0]/self._lsbPerGauss
         return (x, y, z)
         
     def enableAccerometer(self, enable):
@@ -237,12 +244,20 @@ class LSM303DLHC(object):
         az1 = self.accelerometer.readU8(self._ACC_OUT_Z_H_A)
         az2 = self.accelerometer.readU8(self._ACC_OUT_Z_L_A)
         if self.accResolution == self.ACC_HIGH_RES:
-            scale = 16 # 12 bit res
+            res = 4 # 12 bit res
         else:
-            scale = 64 # 10 bit res
+            res = 6 # 10 bit res
         # convert to 2s complement and then to mg
-        ax = struct.unpack('h', struct.pack('BB', ax1, ax2))[0]*self._mgPerLSB/scale
-        ay = struct.unpack('h', struct.pack("BB", ay1, ay2))[0]*self._mgPerLSB/scale
-        az = struct.unpack('h', struct.pack('BB', az1, az2))[0]*self._mgPerLSB/scale
+        ax = ((ax1 << 8) + ax2) >> res
+        ax = self.twos_comp(ax, 12) * self._mgPerLSB
+        ay = ((ay1 << 8) + ay2) >> res 
+        ay = self.twos_comp(ay, 12) * self._mgPerLSB
+        az = ((az1 << 8) + az2) >> res
+        az = self.twos_comp(az, 12) * self._mgPerLSB
+        
         return (ax, ay, az)
     
+    def twos_comp(self, val, bits):
+        if (val&(1<<(bits-1))) != 0:
+            val = val - (1<<bits)
+        return val

@@ -12,7 +12,7 @@ class L3GD20(object):
         self.gyroAddr = gyroAddr
         self.gyroEnabled = True
         self.gyro = Adafruit_I2C(gyroAddr, debug)
-        self.enableGyro(self.gyroEnabled)
+        #self.enableGyro(self.gyroEnabled)
         
     def enableGyro(self, enable):
         """ Enable or disable the magnetometer. 

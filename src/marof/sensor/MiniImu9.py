@@ -35,3 +35,14 @@ class MiniImu9(object):
     
     def readAccelerometer(self):
         return self.lsm303.readAccelerometer()
+
+import time
+
+if __name__=="__main__":
+    mi = MiniImu9()
+    while True:
+        print "Magnetometer:", mi.readMagnetometer()
+        print "Acceleromenter:", mi.readAccelerometer()
+        print "Orientation:", mi.readOrientation()
+        time.sleep(0.2)
+
