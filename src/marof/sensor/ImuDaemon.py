@@ -20,15 +20,15 @@ class ImuDaemon(Sensor):
         now = getMicroSeconds()
         
         msg = magnetometer_t()
-        (msg.time, msg.mx, msg.my, msg.mz) = (now, self._mx, self._my, self.mz)
+        (msg.time, msg.mx, msg.my, msg.mz) = (now, self._mx, self._my, self._mz)
         self.publish("MAGNETOMETER", msg)
         
         msg = accelerometer_t()
-        (msg.time, msg.ax, msg.ay, msg.az) = (now, self._ax, self._ay, self.az)
+        (msg.time, msg.ax, msg.ay, msg.az) = (now, self._ax, self._ay, self._az)
         self.publish("ACCELEROMETER", msg)
         
         msg = gyroscope_t()
-        (msg.time, msg.gx, msg.gy, msg.gz) = (now, self._gx, self._gy, self.gz)
+        (msg.time, msg.gx, msg.gy, msg.gz) = (now, self._gx, self._gy, self._gz)
         self.publish("GYROSCOPE", msg)
         
         msg = orientation_t()

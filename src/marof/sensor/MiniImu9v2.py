@@ -89,28 +89,28 @@ class MiniImu9v2(object):
         
         :returns: calibrated temperature in Celsius
         """
-        return self.applyTempCalibration(self.lsm303.readTemperature())
+        return self.applyTempCalibration(self.readTemperatureRaw())
     
     def readMagnetometer(self):
         """ Get the calibrated magnetic field in each direction. 
         
         :returns: the calibrated magnetic field in each direction in Gauss as a tuple (mx, my, mz)
         """
-        return self.applyMagCalibration(self.lsm303.readMagnetometerRaw())
+        return self.applyMagCalibration(self.readMagnetometerRaw())
     
     def readAccelerometer(self):
         """ Get the calibrated linear acceleration in each direction.
         
         :returns: the calibrated linear acceleration in G (1G = 9.8m/s) as a tuple (ax, ay, az)
         """
-        return self.applyAccCalibration(self.lsm303.readAccelerometerRaw())
+        return self.applyAccCalibration(self.readAccelerometerRaw())
 
     def readGyroscope(self):
         """ Get the calibrated angular velocity about each axis.
         
         :returns: the angular velocity about each axis in deg/s as a tuple (gx, gy, gz)
         """
-        return self.applyGyroCalibration(self.l3gd20.readGyroscopeRaw())
+        return self.applyGyroCalibration(self.readGyroscopeRaw())
     
     def applyMagCalibration(self, raw):
         """ Apply the magnetometer calibration on the raw sensor reading.
@@ -118,8 +118,8 @@ class MiniImu9v2(object):
         :param raw: the raw reading (mx, my, mz) in Gauss
         :returns: the calibrated reading (mxc, myc, mzc) in Gauss
         """
-        raw = mat(raw.append(1))
-        return map(tuple, array(raw*self.magMat))[0]
+        raw = mat(raw + (1,))
+        return map(tuple, array(raw*self.magMat))[0][0:3]
     
     def applyAccCalibration(self, raw):
         """ Apply the accelerometer calibration on the raw sensor reading.
@@ -127,8 +127,8 @@ class MiniImu9v2(object):
         :param raw: the raw reading (ax, ay, az) in G
         :returns: the calibrated reading (axc, ayc, azc) in G
         """
-        raw = mat(raw.append(1))
-        return map(tuple, array(raw*self.accMat))[0]
+        raw = mat(raw + (1,))
+        return map(tuple, array(raw*self.accMat))[0][0:3]
     
     def applyGyroCalibration(self, raw):
         """ Apply the gyroscope calibration on the raw sensor reading.
@@ -272,7 +272,8 @@ class TestMiniImu9v2(unittest.TestCase):
             
     def testAccelerometer(self):
         for _ in xrange(10):
-            raw = (ax, ay, az) = self.miniImu.readAccelerometer()
+            raw = self.miniImu.readAccelerometer()
+            (ax, ay, az) = raw
             aTotal = sqrt(ax*ax + ay*ay + az*az)
             print "ax:", ax, "ay:", ay, "az:", az, "aTotal:", aTotal, "G"
             

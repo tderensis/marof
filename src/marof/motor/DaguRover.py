@@ -24,20 +24,26 @@ class DaguRover(MarofModule):
     def __del__(self):
         PWM.stop(self._pwmRight)
         PWM.stop(self._pwmLeft)
-        
+
+    def publishUpdate(self):
+        return
+    
+    def step(self):
+        return        
+    
     def sendCommand(self, speedPercent, turnPercent):
         speedPercent = self.limitPercent(speedPercent)
         turnPercent = self.limitPercent(turnPercent)
         
         rightPercent = self.limitPercent(speedPercent-turnPercent) # right turn is positive
         leftPercent = self.limitPercent(speedPercent+turnPercent)
-        rightDir = GPIO.HIGH
-        leftDir = GPIO.HIGH
+        rightDir = GPIO.LOW
+        leftDir = GPIO.LOW
         if rightPercent < 0:
-            rightDir = GPIO.LOW
+            rightDir = GPIO.HIGH
         if leftPercent < 0:
-            leftDir = GPIO.LOW
-        
+            leftDir = GPIO.HIGH
+        print rightDir, rightPercent, leftDir, leftPercent
         GPIO.output(self._dirRight, rightDir)
         GPIO.output(self._dirLeft, leftDir)
         PWM.set_duty_cycle(self._pwmRight, fabs(rightPercent))
@@ -60,9 +66,8 @@ class DaguRover(MarofModule):
 from marof import MarofModuleHandler
     
 if __name__ == "__main__":
-    dagu = DaguRover("DAGU_CONTROL", 0.1, "P9_21", "P9_17", "P9_22", "P9_18")
+    dagu = DaguRover("DAGU_CONTROL", 0.1, "P9_21", "P9_11", "P9_22", "P9_12")
     handler = MarofModuleHandler(dagu)
-    handler.subscribe("MOTOR", dagu.handleMotorCommand)
+    handler.subscribe("MOTOR_COMMAND", dagu.handleMotorCommand)
+    handler.startModule()
     handler.start()
-    dagu.start()
-    
