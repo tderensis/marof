@@ -1,0 +1,9 @@
+package marof_lcm;
+
+struct orientation_t
+{
+	int64_t time;
+	double roll;
+	double pitch;
+	double heading;
+}

@@ -112,15 +112,15 @@ class LSM303DLHC(object):
     def __init__(self, magAddr, accAddr, debug=False):
         # init temperature
         self._tempEnabled = False
-        self.enableTemperature(self._tempEnabled)
         
         # init magnetometer
         self._magEnabled = True
-        self._magDataRate = self.MAG_15_HZ
+        self._magDataRate = self.MAG_30_HZ
         self._magRange = self.MAG_RANGE_1_3
         self._magnetometer = Adafruit_I2C(magAddr, debug)
         self.enableMagnetometer(self._magEnabled)
-        
+        self.enableTemperature(self._tempEnabled)
+
         # init accelerometer
         self._accEnabled = True
         self._accPowerMode = self.ACC_NORMAL_POWER
@@ -143,9 +143,10 @@ class LSM303DLHC(object):
         
         :returns: the temperature in Celsius
         """
-        th = self._magnetometer.readU8(self._MAG_TEMP_OUT_H_M)
         tl = self._magnetometer.readU8(self._MAG_TEMP_OUT_L_M)
-        return self._twos_comp(((th << 8) + tl) >> 4, 12) # 12-bit resolution, left-justified
+        th = self._magnetometer.readU8(self._MAG_TEMP_OUT_H_M)
+        #tl = self._magnetometer.readU8(self._MAG_TEMP_OUT_L_M)
+        return self._twos_comp(((th << 8) + tl) >> 4, 12)/8.0 # 12-bit res, left-justified, 8 LSB/C
     
     def setMagnetometerRate(self, hz):
         """ Set the minimum refresh rate of the magnetometer.

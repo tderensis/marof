@@ -132,6 +132,6 @@ class L3GD20(object):
             self._gyro.write8(self._CTRL_REG1, 0x00)
 
     def _writeReg4(self):
-        self._accelerometer.write8(self._CTRL_REG4, self._gyroRange)
+        self._gyro.write8(self._CTRL_REG4, self._gyroRange)
         
     

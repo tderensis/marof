@@ -16,6 +16,7 @@ class MiniImu9(object):
     
     def __init__(self, debug=False):
         self.lsm303 = LSM303DLHC(self._MAG_ADDRESS, self._ACC_ADDRESS, debug)
+        self.lsm303.enableTemperature(True)
         self.l3gd20 = L3GD20(self._GYRO_ADDRESS, debug)
     
     def readOrientation(self):
@@ -96,7 +97,7 @@ class TestMiniImu9(unittest.TestCase):
             time.sleep(0.1)
     
     def testTemperature(self):
-        for _ in xrange(10):
+        for _ in xrange(20):
             temp = self.miniImu.readTemperature()
             print "temp:", temp, "C"
             time.sleep(0.1)
