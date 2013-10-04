@@ -2,6 +2,7 @@ import abc
 import traceback
 import sys
 import time
+import lcm
 
 class MarofModule(object):
     """ Parent class of all MARoF modules. Thread safe
@@ -12,6 +13,7 @@ class MarofModule(object):
         """ Initialize the module """
         self._name = name
         self._updateInterval = updateInterval
+        self._lcm = lcm.LCM()
         #self._publishInterval = 0.1
         self._isRunning = False
         self._isPaused = False
@@ -25,6 +27,11 @@ class MarofModule(object):
     def updateInterval(self):
         """ The update interval in seconds. """
         return self._updateInterval
+    
+    @property
+    def lcmTX(self):
+        """ The lcm object used to transmit."""
+        return self._lcm
     
     def start(self):
         """ Start the module. This method blocks till the module is done or is stopped by the

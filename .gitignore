@@ -1,3 +1,4 @@
 # Files that git should ignore
 *.pyc
 src/lcm-defs/marof_lcm
+src/lcm-defs/marof_lcm.jar

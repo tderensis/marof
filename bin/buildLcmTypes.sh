@@ -2,4 +2,6 @@
 
 cd ../src/lcm-defs
 
-lcm-gen -p *.lcm
+lcm-gen -pj *.lcm
+javac -cp /usr/local/share/java/lcm.jar marof_lcm/*.java
+jar cf marof_lcm.jar marof_lcm/*.class
