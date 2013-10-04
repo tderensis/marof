@@ -1,0 +1,7 @@
+package marof_lcm;
+
+struct configModule_t {
+	int64_t time;
+	string name;     // the module name
+	string command;  // the command
+}

@@ -1,0 +1,8 @@
+package marof_lcm;
+
+// The simplest example
+ 
+struct sensorData_t {
+	int64_t time;
+	int64_t data;
+}
