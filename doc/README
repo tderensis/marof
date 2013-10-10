@@ -1,1 +1,9 @@
-Where documentation will be generated. Probably using Sphinx.
+Documentation for this project is generated using Sphinx. To generate html documentation use:
+
+>> make html
+
+The resulting documentation will be stored in _build/html. View the index.html file in this directory
+using your favorite browser.
+
+>> firefox _build/html/index.html
+
