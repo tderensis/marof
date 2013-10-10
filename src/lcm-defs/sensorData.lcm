@@ -4,5 +4,5 @@ package marof_lcm;
  
 struct sensorData_t {
 	int64_t time;
-	int64_t data;
+	double data;
 }

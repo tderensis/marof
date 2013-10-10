@@ -1,0 +1,8 @@
+package marof_lcm;
+
+struct motorCommand_t 
+{
+	int64_t time;
+	float speedPercent; // percentages can be between 100 and -100
+	float turnPercent;
+}
