@@ -1,3 +1,4 @@
+from math import fabs
 from marof import MarofModule
 from marof_lcm import motorCommand_t
 
@@ -38,8 +39,8 @@ class DaguRover(MarofModule):
         
         GPIO.output(self._dirRight, rightDir)
         GPIO.output(self._dirLeft, leftDir)
-        PWM.set_duty_cycle(self._pwmRight, rightPercent)
-        PWM.set_duty_cycle(self._pwmLeft, leftPercent)
+        PWM.set_duty_cycle(self._pwmRight, fabs(rightPercent))
+        PWM.set_duty_cycle(self._pwmLeft, fabs(leftPercent))
         
     def handleMotorCommand(self, channel, msg):
         motorCommand = motorCommand_t.decode(msg)

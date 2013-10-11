@@ -17,7 +17,7 @@ class SensorExample(Sensor):
     def sensorStep(self):
         #print "Doing sensor step..."
         r = random()
-        self._data = self._data - 0.5 + r
+        self._data = 0.5 - r
         
     def applyFilter(self):
         if self.filter is not None:
