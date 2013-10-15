@@ -1,8 +1,7 @@
 import abc
 import time
-import lcm
 
-from timing import getSeconds
+import lcm
 
 class MarofModule(object):
     """ Parent class of all MARoF modules. 
@@ -11,9 +10,8 @@ class MarofModule(object):
     
     def __init__(self, name, updateInterval):
         """ Initialize the module """
+        assert updateInterval >= 0, 'Update interval is negative'
         self._name = name
-        if updateInterval < 0:
-            raise Exception("Update Interval cannot be negative")
         self._updateInterval = updateInterval
         self._lcm = lcm.LCM()
         #self._publishInterval = 0.1
@@ -38,7 +36,7 @@ class MarofModule(object):
     def start(self):
         """ Start the module. This method blocks till the module is done or is stopped by the
         handler. Should be called last after handler is started. """
-        print "Starting module:", self.name
+        print "Starting module", self.name
         self._isRunning = True
         self._isPaused = False
         self.run()
@@ -46,6 +44,7 @@ class MarofModule(object):
     def stop(self):
         """ Stop the running module and exit. Assumes the module is well behaved and finishes
         the current step. """
+        print "Stopping module", self.name
         self._isRunning = False
     
     def pause(self):
@@ -57,20 +56,22 @@ class MarofModule(object):
         self._isPaused = False
                 
     def run(self):
-        """ Run the module. Calls the step method. """
+        """ Run the module. Calls the step method. This method blocks. """
         while self._isRunning:
-            delta = getSeconds()
+            delta = time.time()
             if self._isPaused == False:
                 self.step()
                 self.publishUpdate()
-            delta = getSeconds() - delta
             
             if self._updateInterval == 0:
                 continue
-            elif delta < self._updateInterval:
-                time.sleep(self._updateInterval - delta)
+            
+            delta = self._updateInterval - (time.time() - delta)
+            if delta > 0:
+                time.sleep(delta)
             else:
                 print "Warning: Module ", self._name, " took too long between steps"
+        print "Module stopped"
     
     def publish(self, channel, lcmMsg):
         """ Publish a message. """
@@ -83,8 +84,7 @@ class MarofModule(object):
         
     @abc.abstractmethod
     def step(self):
-        """ The module's main function that does the actual module task. Returns the message
-        to publish. """
+        """ The module's main function that does the actual module task. """
         return
     
         

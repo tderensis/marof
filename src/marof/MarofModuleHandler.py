@@ -1,6 +1,6 @@
 import threading
 import select
-import atexit
+import signal
 
 import lcm
 
@@ -23,7 +23,8 @@ class MarofModuleHandler(object):
         self._handlerThread.setDaemon(True) # A fail-safe to make things work with iPython
         
         # Close the thread upon Python exit
-        atexit.register(self._release)
+        signal.signal(signal.SIGINT, self._handleSigint)
+        #atexit.register(self._release)
         
     def __del__(self):
         self._release()
@@ -33,8 +34,14 @@ class MarofModuleHandler(object):
         """ The module property. """
         return self._module
     
+    def _handleSigint(self, signal, frame):
+        """ Handle the SIGINT signal. """
+        self._release()
+        
     def _release(self):
-        """ Stop the handling thread. """
+        """ Stop the module and handling thread. """
+        print "\nStopping handler for module", self._module.name
+        self._module.stop()
         self._stopEvent.set()
         self._handlerThread.join()
         
@@ -65,4 +72,5 @@ class MarofModuleHandler(object):
             rc = select.select([self._lcm.fileno()], [], [self._lcm.fileno()], 0.05)
             if len(rc[0]) > 0 or len(rc[2]) > 0:
                 self._lcm.handle()
+        print "Handler stopped"
     

@@ -9,22 +9,31 @@ class Sensor(MarofModule):
         """ Initialize sensor. """
         super(Sensor, self).__init__(name, updateInterval)
         self._filter = filt
+        self._filterOutput = None
         
     @property
     def filter(self):
         return self._filter
     
-    def step(self):
-        self.sensorStep()
-        self.applyFilter()
+    @property
+    def filterOutput(self):
+        """ The output of the filter. """
+        return self._filterOutput
     
-    @abc.abstractmethod
-    def applyFilter(self):
-        """ A sensor must implement its filter. """
+    @abc.abstractproperty
+    def filterInput(self):
+        """ The input to the filter. """
         return
     
     @abc.abstractmethod
     def sensorStep(self):
         """ Where the sensor does all of its work. """
         return
+    
+    def step(self):
+        self.sensorStep()
+        if self.filter is not None:
+            self._filterOutput = self.filter.step(self.filterInput)
+    
+    
     

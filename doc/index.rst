@@ -12,11 +12,7 @@ Contents:
    :maxdepth: 2
 
    Getting Started <gettingStarted>
-
-.. automodule:: marof
-
-.. autoclass:: marof.MarofModule
-    :members:
+   Filters <filters>
 
 Indices and tables
 ==================

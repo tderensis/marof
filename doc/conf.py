@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # MARoF documentation build configuration file, created by
-# sphinx-quickstart2 on Thu Oct 10 00:19:14 2013.
+# sphinx-quickstart2 on Sun Oct 13 11:00:47 2013.
 #
 # This file is execfile()d with the current directory set to its containing dir.
 #
@@ -26,7 +26,7 @@ sys.path.insert(0, os.path.abspath('../src/lcm-defs'))
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.pngmath', 'sphinx.ext.todo']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -208,6 +208,8 @@ latex_documents = [
 # If false, no module index is generated.
 #latex_domain_indices = True
 
+latex_elements = {}
+latex_elements['preamble'] = r"\usepackage{boldmath}"
 
 # -- Options for manual page output --------------------------------------------
 
@@ -241,3 +243,7 @@ texinfo_documents = [
 
 # How to display URL addresses: 'footnote', 'no', or 'inline'.
 #texinfo_show_urls = 'footnote'
+
+# To enable showing todos in documentation
+todo_include_todos=True
+

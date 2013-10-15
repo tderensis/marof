@@ -1,2 +1,2 @@
 from Filter import Filter
-from SimpleLpf import SimpleLpf
+from FirstOrderLpf import FirstOrderLpf
