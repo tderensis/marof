@@ -10,24 +10,24 @@ if __name__ == "__main__":
     msg = motorCommand_t()
     msg.speedPercent = 50
     msg.turnPercent = 0
-    msg.time = getMicroSeconds
+    msg.time = getMicroSeconds()
     l.publish("MOTOR", msg.encode())
     time.sleep(2)
     
     msg.speedPercent = -50
     msg.turnPercent = 0
-    msg.time = getMicroSeconds
+    msg.time = getMicroSeconds()
     l.publish("MOTOR", msg.encode())
     time.sleep(2)
     
     msg.speedPercent = 0
     msg.turnPercent = 50
-    msg.time = getMicroSeconds
+    msg.time = getMicroSeconds()
     l.publish("MOTOR", msg.encode())
     time.sleep(2)
    
     msg.speedPercent = 0
     msg.turnPercent = -50
-    msg.time = getMicroSeconds
+    msg.time = getMicroSeconds()
     l.publish("MOTOR", msg.encode())
     time.sleep(2)

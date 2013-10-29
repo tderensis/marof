@@ -209,7 +209,7 @@ latex_documents = [
 #latex_domain_indices = True
 
 latex_elements = {}
-latex_elements['preamble'] = r"\usepackage{boldmath}"
+latex_elements['preamble'] = r"\usepackage{boldmath} \usepackage{amsmath}"
 
 # -- Options for manual page output --------------------------------------------
 

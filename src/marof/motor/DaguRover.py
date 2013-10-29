@@ -9,10 +9,11 @@ class DaguRover(MarofModule):
     """ Class to send commands to the motor controller. """
     def __init__(self, name, updateInterval, pwmRight, dirRight, pwmLeft, dirLeft):
         super(DaguRover, self).__init__(name, updateInterval)
-        self._pwmRight = self.pwmRight
-        self._dirRight = self.dirRight
-        self._pwmLeft = self.pwmLeft
-        self._dirLeft = self.dirLeft
+        self._pwmRight = pwmRight
+        self._dirRight = dirRight
+        self._pwmLeft = pwmLeft
+        self._dirLeft = dirLeft
+        
         PWM.start(self._pwmRight, 0)
         GPIO.setup(self._dirRight, GPIO.OUT)
         GPIO.output(self._dirRight, GPIO.LOW)
@@ -47,7 +48,7 @@ class DaguRover(MarofModule):
         self.sendCommand(motorCommand.speedPercent, motorCommand.turnPercent)
         
     def limitPercent(self, percent):
-        """ Limit the ercent to between -100 and 100. """
+        """ Limit the percent to between -100 and 100. """
         if percent > 100:
             return 100
         elif percent < -100:
@@ -59,7 +60,7 @@ class DaguRover(MarofModule):
 from marof import MarofModuleHandler
     
 if __name__ == "__main__":
-    dagu = DaguRover("DAGU_CONTROL", 0.1, "P8_14", "P8_16", "P8_13", "P8_14")
+    dagu = DaguRover("DAGU_CONTROL", 0.1, "P9_14", "P9_15", "P9_16", "P9_17")
     handler = MarofModuleHandler(dagu)
     handler.subscribe("MOTOR", dagu.handleMotorCommand)
     handler.start()

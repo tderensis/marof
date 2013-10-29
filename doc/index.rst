@@ -13,6 +13,7 @@ Contents:
 
    Getting Started <gettingStarted>
    Filters <filters>
+   Models <models>
 
 Indices and tables
 ==================
