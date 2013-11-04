@@ -1,0 +1,9 @@
+package marof_lcm;
+
+struct gyroscope_t
+{
+	int64_t time;
+	double gx;
+	double gy;
+	double gz;
+}

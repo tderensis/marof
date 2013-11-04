@@ -39,15 +39,15 @@ class PlotLcm(QMainWindow):
         self.handlerThread.setDaemon(True)
         self.handlerThread.start()
         
-        self.connect(self, SIGNAL('redraw()'), self.on_draw)
+        self.connect(self, SIGNAL('redraw()'), self.on_draw) # Create redraw signal
         self.drawingThread = threading.Thread(target=self.drawLoop)
         self.drawingThread.setDaemon(True)
         self.drawingThread.start()
         
     def _cleanup(self):
         self._stopEvent.set()
-        #self.handlerThread.join()
-        #self.drawingThread.join()
+        self.handlerThread.join()
+        self.drawingThread.join()
         
     def handleSigint(self, *args):
         self._cleanup()
@@ -116,15 +116,9 @@ class PlotLcm(QMainWindow):
         self.lastPlot = (channel, lcmType, lcmProperty)
         self._lcm.subscribe(channel, self.handleMessage)
         
-    def mergePlot(self):
-        channel = str(self.channelTextbox.text()).strip()
-        lcmType = str(self.typeTextbox.text()).strip()
-        lcmProperty = str(self.propertyTextbox.text()).strip()
-        
-        if not self.checkInputs(channel, lcmType, lcmProperty):
-            return
-        
-        # Add data to last plot  
+    def clearPlots(self):
+        for key in self.data.keys():
+            self.data[key] = []
     
     def checkInputs(self, channel, lcmType, lcmProperty):
         # Error checking cause nobody is perfect...
@@ -176,8 +170,8 @@ class PlotLcm(QMainWindow):
         self.addPlotButton = QPushButton("Add Plot")
         self.connect(self.addPlotButton, SIGNAL('clicked()'), self.addPlot)
         
-        self.mergePlotButton = QPushButton("Merge Plot")
-        self.connect(self.mergePlotButton, SIGNAL('clicked()'), self.mergePlot)
+        self.mergePlotButton = QPushButton("Reset Data")
+        self.connect(self.mergePlotButton, SIGNAL('clicked()'), self.clearPlots)
         
         self.gridCheckBox = QCheckBox("Show Grid")
         self.gridCheckBox.setChecked(False)

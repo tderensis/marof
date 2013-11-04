@@ -2,13 +2,12 @@ from Adafruit_I2C import Adafruit_I2C
 
 class LSM303DLHC(object):
     """ A combined magnetometer and linear accelerometer. The magnetometer also contains 
-    a temperature sensor.
+    a temperature sensor. Uses the Adafruit_I2C library for the BeagleBone Black.
     
     :param magAddr: the address of the magnetometer
     :param accAddr: the address of the accelerometer
     :param debug: default False, print debug messages
     """
-    
     # Magnetometer registers
     _MAG_CRA_REG_M = 0x00
     _MAG_CRB_REG_M = 0x01
@@ -110,8 +109,10 @@ class LSM303DLHC(object):
     
     
     def __init__(self, magAddr, accAddr, debug=False):
+        self._debug = debug
+        
         # init temperature
-        self._tempEnabled = False
+        self._tempEnabled = True
         
         # init magnetometer
         self._magEnabled = True
@@ -119,16 +120,20 @@ class LSM303DLHC(object):
         self._magRange = self.MAG_RANGE_1_3
         self._magnetometer = Adafruit_I2C(magAddr, debug)
         self.enableMagnetometer(self._magEnabled)
-        self.enableTemperature(self._tempEnabled)
-
+        
         # init accelerometer
         self._accEnabled = True
         self._accPowerMode = self.ACC_NORMAL_POWER
         self._accResolution = self.ACC_HIGH_RES
-        self._accDataRate = self.ACC_10_HZ
+        self._accDataRate = self.ACC_50_HZ
         self._accRange = self.ACC_RANGE_2
         self._accelerometer = Adafruit_I2C(accAddr, debug)
         self.enableAccelerometer(self._accEnabled)
+        
+        if self._debug:
+            print """Magnetometer enabled with 30 Hz refresh rate and +-1.3 Gauss sensitivity.
+            Accelerometer enabled in normal power mode with 12-bit resolution, 50 Hz refresh rate, 
+            and +-2 G sensitivity. Temperature enabled."""
         
     def enableTemperature(self, enable):
         """ Enable or disable the temperature readings. 
@@ -242,7 +247,7 @@ class LSM303DLHC(object):
         self._writeAccReg4()
     
     def readAccelerometer(self):
-        """ Read the accelerometer data in each direction.
+        """ Read the acceleration in each direction.
         
         :returns: The acceleration in each direction (ax, ay, az) in G, where 1G = 9.8m/s
         """
@@ -255,15 +260,15 @@ class LSM303DLHC(object):
         
         # Convert to 2s complement and then to mG. 12 or 10-bit resolution, left justified
         res = 12 if self._accResolution == self.ACC_HIGH_RES else 10
-        mgPerLsb = self.ACC_RANGES[self._accRange]
-        ax = self._twos_comp(((axh << 8) + axl) >> (16 - res), res) * mgPerLsb
-        ay = self._twos_comp(((ayh << 8) + ayl) >> (16 - res), res) * mgPerLsb
-        az = self._twos_comp(((azh << 8) + azl) >> (16 - res), res) * mgPerLsb
+        GPerLsb = self.ACC_RANGES[self._accRange]/1000.0
+        ax = self._twos_comp(((axh << 8) + axl) >> (16 - res), res) * GPerLsb
+        ay = self._twos_comp(((ayh << 8) + ayl) >> (16 - res), res) * GPerLsb
+        az = self._twos_comp(((azh << 8) + azl) >> (16 - res), res) * GPerLsb
         return (ax, ay, az)
     
     def _twos_comp(self, val, bits):
-        if (val&(1<<(bits-1))) != 0:
-            val = val - (1<<bits)
+        if (val & (1 << (bits - 1))) != 0:
+            val = val - (1 << bits)
         return val
     
     def _writeMagCRA(self):
@@ -284,10 +289,9 @@ class LSM303DLHC(object):
     def _writeAccReg1(self):
         if self._accEnabled:
             self._accelerometer.write8(self._ACC_CTRL_REG1_A, 
-                                      self._accDataRate | self._accPowerMode | 0x07)
+                                       self._accDataRate | self._accPowerMode | 0x07) # all axes
         else:
             self._accelerometer.write8(self._ACC_CTRL_REG1_A, 0x00)
 
     def _writeAccReg4(self):
         self._accelerometer.write8(self._ACC_CTRL_REG4_A, self._accResolution | self._accRange)
-        

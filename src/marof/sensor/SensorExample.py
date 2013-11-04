@@ -17,6 +17,9 @@ class SensorExample(Sensor):
     def __init__(self, name, updateInterval, filt):
         super(SensorExample, self).__init__(name, updateInterval, filt)
         self._data = 0;
+        self._msg = sensorData_t()
+        self._channel = self.name
+        self._filtChannel = self.name + "_FILTERED"
         
     @property
     def filterInput(self):
@@ -26,12 +29,12 @@ class SensorExample(Sensor):
         self._data = 0.5 - random()
             
     def publishUpdate(self):
-        msg = sensorData_t()
-        msg.time = getMicroSeconds()
-        msg.data = self._data
-        self.publish(self.name, msg)
-        msg.data = self.filterOutput
-        self.publish(self.name+"_FILTERED", msg)
+        #msg = sensorData_t()
+        self._msg.time = getMicroSeconds()
+        self._msg.data = self._data
+        self.publish(self._channel, self._msg)
+        self._msg.data = self.filterOutput
+        self.publish(self._filtChannel, self._msg)
             
     def handleMessage(self, channel, data):
         """ Handle a config message. """
@@ -40,8 +43,9 @@ class SensorExample(Sensor):
         
         
 if __name__ == "__main__":
-    lpf = FirstOrderLpf(cutoff=0.5, samplingInterval=0.1)
-    sensor = SensorExample(name="SENSOR_EXAMPLE", updateInterval=0.1, filt=lpf)
+    T = 1.0/20
+    lpf = FirstOrderLpf(cutoff=0.05, samplingInterval=T)
+    sensor = SensorExample(name="SENSOR_EXAMPLE", updateInterval=T, filt=lpf)
     handler = MarofModuleHandler(sensor)
     handler.subscribe("CONFIG_MY_SENSOR", sensor.handleMessage)
     handler.start()

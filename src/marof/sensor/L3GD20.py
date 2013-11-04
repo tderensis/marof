@@ -1,12 +1,12 @@
 from Adafruit_I2C import Adafruit_I2C
 
 class L3GD20(object):
-    """ A 3 axis gyroscope that measures angular rate.
+    """ A 3 axis gyroscope that measures angular rate. Includes a low-pass filter. 
+    Uses the Adafruit_I2C library for the BeagleBone Black
     
     :param gyroAddr: the address of the gyroscope
     :param debug: default False, print debug messages
     """
-    
     # Gyroscope registers
     _WHO_AM_I = 0x0F
     _CTRL_REG1 = 0x20
@@ -57,12 +57,16 @@ class L3GD20(object):
     
     
     def __init__(self, gyroAddr, debug=False):
+        self._debug = debug
         self._gyroEnabled = True
         self._gyroRange = self.RANGE_250
         self._gyroDataRate = self.DR_95_HZ
         self._gyroBW = self.BW_1
         self._gyro = Adafruit_I2C(gyroAddr, debug)
         self.enableGyroscope(self._gyroEnabled)
+        if self._debug:
+            print """Enabled gyroscope with 95 Hz refresh rate, +-250 degrees/sec sensitivity, and 
+            low-pass filter with cutoff of 12.5 Hz."""
         
     def enableGyroscope(self, enable):
         """ Enable or disable the gyroscope.
@@ -133,5 +137,3 @@ class L3GD20(object):
 
     def _writeReg4(self):
         self._gyro.write8(self._CTRL_REG4, self._gyroRange)
-        
-    

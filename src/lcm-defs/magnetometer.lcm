@@ -1,0 +1,9 @@
+package marof_lcm;
+
+struct magnetometer_t 
+{
+	int64_t time;
+	double mx;
+	double my;
+	double mz;
+}

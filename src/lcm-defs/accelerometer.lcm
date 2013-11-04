@@ -1,0 +1,9 @@
+package marof_lcm;
+
+struct accelerometer_t
+{
+	int64_t time;
+	double ax;
+	double ay;
+	double az;
+}

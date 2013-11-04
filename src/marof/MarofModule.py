@@ -1,5 +1,7 @@
 import abc
 import time
+import threading
+import signal
 
 import lcm
 
@@ -15,6 +17,8 @@ class MarofModule(object):
         self._updateInterval = updateInterval
         self._lcm = lcm.LCM()
         #self._publishInterval = 0.1
+        self._stopEvent = threading.Event()
+        signal.signal(signal.SIGINT, self.stop)
         self._isRunning = False
         self._isPaused = False
     
@@ -59,7 +63,7 @@ class MarofModule(object):
         """ Run the module. Calls the step method. This method blocks. """
         while self._isRunning:
             delta = time.time()
-            if self._isPaused == False:
+            if not self._isPaused:
                 self.step()
                 self.publishUpdate()
             

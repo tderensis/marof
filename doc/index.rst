@@ -14,6 +14,7 @@ Contents:
    Getting Started <gettingStarted>
    Filters <filters>
    Models <models>
+   Sensors <sensors>
 
 Indices and tables
 ==================
