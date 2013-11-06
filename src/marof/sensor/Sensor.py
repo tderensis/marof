@@ -32,8 +32,8 @@ class Sensor(MarofModule):
     
     def step(self):
         self.sensorStep()
-        if self.filter is not None:
-            self._filterOutput = self.filter.step(self.filterInput)
+        if self._filter is not None:
+            self._filterOutput = self._filter.step(self.filterInput)
     
     
     

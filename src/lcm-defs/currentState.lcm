@@ -1,0 +1,12 @@
+package marof_lcm;
+
+struct currentState_t
+{
+	int64_t time;
+	double north;
+	double east;
+	double heading;
+	double surge;
+	double sway;
+	double yawRate;
+}

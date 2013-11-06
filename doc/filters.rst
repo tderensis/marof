@@ -4,11 +4,14 @@ Filters
 The filters are intended to be easy to use filters
 
 .. autoclass:: marof.filter.Filter
-	    :members:
+	    	:members:
+	    	:private-members:
 	    
 .. autoclass:: marof.filter.FirstOrderLpf
-	    :members:
+	    	:members:
+	    	:private-members:
 	    
 .. autoclass:: marof.filter.FirstOrderHpf
             :members:
+            :private-members:
 

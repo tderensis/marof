@@ -1,0 +1,15 @@
+package marof_lcm;
+
+struct desiredState_t
+{
+	int64_t time;
+	boolean waypointMode;
+	
+	// If waypointMode is True, use these
+	double north;
+	double east;
+	double heading;
+	
+	// else use velocity and heading
+	double velocity;
+}

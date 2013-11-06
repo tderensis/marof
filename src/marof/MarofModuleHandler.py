@@ -1,34 +1,52 @@
 import threading
 import select
 import signal
-
+import time
 import lcm
 
-from marof_lcm import configModule_t
+from marof_lcm import config_t
 
 class MarofModuleHandler(object):
-    """ Responsible for configuring a module through LCM. This includes starting and stopping. """
+    """ Responsible for configuring a module through LCM. This includes starting and stopping. 
+    
+    :param module: the MarofModule for which to handle messages.
+    """
     
     def __init__(self, module):
-        """ Module handler init """
         self._module = module
         
         self._lcm = lcm.LCM()
-        self._lcm.subscribe("CONFIG", self._handleConfig)
+        self._lcm.subscribe("MODULE_CONFIG", self._handleModuleConfig)
+        self._lcm.subscribe("HANDLER_CONFIG", self._handleHandlerConfig)
+        
+        self._moduleThread = threading.Thread(target=self._module.start)
+        self._moduleThread.setDaemon(True)
         
         self._stopEvent = threading.Event() # to stop the handler thread
-        
-        # Create the handler thread, but don't start it yet
-        self._handlerThread = threading.Thread(target=self._handlerMain)
-        self._handlerThread.setDaemon(True) # A fail-safe to make things work with iPython
-        
-        # Close the thread upon Python exit
-        signal.signal(signal.SIGINT, self._handleSigint)
-        #atexit.register(self._release)
+        signal.signal(signal.SIGINT, self._handleSigint) # Close the thread upon Python exit
         
     def __del__(self):
         self._release()
+    
+    def subscribe(self, channel, function):
+        """ Subscribe to a channel. 
         
+        :param channel: the channel string
+        :param function: the function to subscribe to
+        """
+        self._lcm.subscribe(channel, function)
+        
+    def start(self):
+        """ Start the handler on the current thread. This function will block until SIGINT or 
+        a config message stops it. All subscriptions should to be registered first. 
+        """
+        self._run()
+    
+    def startModule(self):
+        """ Start the module on another thread. """
+        self._moduleThread.start()
+        time.sleep(0.05) # Give the thread some time to start
+    
     @property
     def module(self):
         """ The module property. """
@@ -40,37 +58,49 @@ class MarofModuleHandler(object):
         
     def _release(self):
         """ Stop the module and handling thread. """
-        print "\nStopping handler for module", self._module.name
         self._module.stop()
+        self._moduleThread.join()
         self._stopEvent.set()
-        self._handlerThread.join()
-        
-    def subscribe(self, channel, function):
-        """ Subscribe to a channel. """
-        self._lcm.subscribe(channel, function)
-        
-    def start(self):
-        """ Start the handler on another thread. All subscriptions need to be registered first. """
-        self._handlerThread.start()
     
-    def _handleConfig(self, channel, data):
-        """ Handle a module configuration message. """
-        print "Handing configuration message"
-        config = configModule_t.decode(data)
-        if config.name == self._module.name:
-            # The message is for this module
-            if config.command.equal('start'):
-                self._module.start()
-                print "Starting module", self._module.name
-            elif config.command.equal('stop'):
+    def _handleModuleConfig(self, channel, data):
+        """ Handle a module configuration message. 
+        
+        :param channel: the channel string
+        :param data: the data sent on the channel
+        """
+        config = config_t().decode(data)
+        if config.name == self._module.name: # check if the message is for this module
+            if config.command == 'start':
+                if not self._module.isRunning:
+                    self.startModule()
+            elif config.command == 'stop':
                 self._module.stop()
-            
-    def _handlerMain(self):
+            elif config.command == 'pause':
+                self._module.pause()
+            elif config.command == 'resume':
+                self._module.resume()
+    
+    def _handleHandlerConfig(self, channel, data):
+        """ Handle a handler configuration message. 
+        
+        :param channel: the channel string
+        :param data: the data sent on the channel
+        """
+        config = config_t().decode(data)
+        if config.name == self._module.name:
+            if config.command == 'stop':
+                self._module.stop() # stop the module, or else there is no handler left to stop it
+                self._stopEvent.set()
+        
+    def _run(self):
         """ Handle LCM messages until _stopEvent is set. """
+        print "Starting handler for module", self._module.name
         while not self._stopEvent.is_set():
             # wait until LCM has a message ready to read
-            rc = select.select([self._lcm.fileno()], [], [self._lcm.fileno()], 0.05)
+            try:
+                rc = select.select([self._lcm.fileno()], [], [self._lcm.fileno()], 0.05)
+            except select.error:
+                continue # ignore the error
             if len(rc[0]) > 0 or len(rc[2]) > 0:
                 self._lcm.handle()
-        print "Handler stopped"
-    
+        print "Stopped handler for module", self._module.name
