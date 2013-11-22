@@ -60,7 +60,7 @@ class DaguRover(MarofModule):
 from marof import MarofModuleHandler
     
 if __name__ == "__main__":
-    dagu = DaguRover("DAGU_CONTROL", 0.1, "P9_14", "P9_15", "P9_16", "P9_17")
+    dagu = DaguRover("DAGU_CONTROL", 0.1, "P9_21", "P9_17", "P9_22", "P9_18")
     handler = MarofModuleHandler(dagu)
     handler.subscribe("MOTOR", dagu.handleMotorCommand)
     handler.start()

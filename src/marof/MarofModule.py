@@ -6,6 +6,8 @@ import Queue
 
 import lcm
 
+from timing import getMicroSeconds, getSeconds
+
 class MarofModule(object):
     """ Parent class of all MARoF modules.
     
@@ -65,28 +67,32 @@ class MarofModule(object):
     
     def _run(self):
         """ Run the module. Calls the step method. This method blocks. """
+
         print "Starting module", self._name, "with update interval:", self._updateInterval
+        nextStart = (getSeconds() + 1) * 1000000
         while self._isRunning:
-            delta = time()
-            
-            if not self._isPaused:
-                self.step()
-                self.publishUpdate()
-            
-            # Run commands outside the step and publish methods to modify the module safely
-            while not self._modQueue.empty():
-                exec(self._modQueue.get())
+            self._moduleStep()
                 
             if self._updateInterval == 0:
                 continue
-            
-            delta = self._updateInterval + delta - time()
-            if delta > 0:
-                sleep(delta)
+
+            nextStart = nextStart + int(self._updateInterval*1000000)
+            sleepTime = (nextStart - getMicroSeconds())/1000000.0
+            if sleepTime > 0:
+                sleep(sleepTime)
             else:
-                print "Warning: Module", self._name, " took too long between steps"
+                print "Warning: Module", self._name, " took too long during step"
                 
         print "\nStopped module", self._name
+    
+    def _moduleStep(self):
+        if not self._isPaused:
+            self.step()
+            self.publishUpdate()
+            
+        # Run commands outside the step and publish methods to modify the module safely
+        while not self._modQueue.empty():
+            exec(self._modQueue.get())
     
     def _handleSigint(self, signal, frame):
         self.stop()
